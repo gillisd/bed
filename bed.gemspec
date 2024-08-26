@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["David Gillis"]
   spec.email = ["david.gillis@hey.com"]
 
-  spec.summary = "A simple, modern schema library built on top of Data"
+  spec.summary = "A simple, modern schema library built on top of Data class"
   spec.description = "Bed is a simple, modern schema library built on top of Data. It provides a simple, declarative way to define schemas for your data, and a way to validate that data against those schemas."
   spec.required_ruby_version = ">= 3.0.0"
   spec.homepage = "https://github.com/gillisd/bed"
