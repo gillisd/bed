@@ -1,4 +1,4 @@
-class Bed::Schema < Data
+class Bed::Definition < Data
   def self.define_with_types(**kwargs)
     puts 'defining...'
     old_kwdargs = kwargs
@@ -31,15 +31,12 @@ class Bed::Schema < Data
       define_method :deconstruct do
         puts 'deconstructing...'
         val = _deconstruct
-        case val
-        in *beginning, Class => data, *ending
-          [*beginning, *data.deconstruct, *ending]
-        in [*rest, Data => data]
-          [*rest, *data.deconstruct]
-        in [Data => data, *rest]
-          [*data.deconstruct, *rest]
-        else
-          _deconstruct
+        val.map do |item|
+          if item.is_a?(Data)
+            item.deconstruct
+          else
+            item
+          end
         end
       end
 
