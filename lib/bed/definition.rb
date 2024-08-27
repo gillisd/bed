@@ -94,7 +94,15 @@ module Bed
     end
   end
 
+  Field = Data.define(:name, :type, :required, :enable_default, :default_value, :allow_nil) do
+    def initialize(name:, type:, required: true, enable_default: false, default_value: nil, allow_nil: false)
+      super
+    end
+  end
+
   class SchemaBuilder
+    attr_reader :fields
+
     def initialize
       @fields = {}
     end
@@ -109,21 +117,25 @@ module Bed
       instance_eval(&block)
     end
 
+    def to_schema
+      Schema.new(@fields)
+    end
+
+    def define_field(type, field_name, required: true, enable_default: false, default_value: nil, allow_nil: false)
+      @fields[field_name] = Field.new(name: field_name, type: type, required: required, enable_default: enable_default, default_value: default_value, allow_nil: allow_nil)
+    end
+
+    private
+
     def const_missing(type)
       Object.const_get(type)
     end
 
-    def define_field(type, field_name, required: true, enable_default: false, default_value: nil, allow_nil: false)
-      @fields[field_name] = type
-    end
+
 
     def method_missing(type, *args)
       field_name = args.first
       @fields[field_name] = Object.const_get(type)
-    end
-
-    def to_schema
-      Schema.new(@fields)
     end
   end
 end
