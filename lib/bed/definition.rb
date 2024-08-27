@@ -1,96 +1,129 @@
-class Bed::Definition < Data
-  def self.define_with_types(**kwargs)
-    puts 'defining...'
-    old_kwdargs = kwargs
-    kwargs = kwargs.transform_values do |v|
-      v.superclass == Data ? v.new : v
+class Object
+  class << self
+    alias_method :original_method_missing, :method_missing
+
+    def method_missing(method_name, *args, &block)
+      if method_name == :String
+        puts "Intercepted call to String with argument: #{args.first}"
+        define_method(args.first) do
+          "This is a dynamically defined method: #{args.first}"
+        end
+      else
+        original_method_missing(method_name, *args, &block)
+      end
+    end
+  end
+end
+
+module Bed
+  class Schema
+    attr_reader :fields
+
+    def initialize(fields)
+      @fields = fields
     end
 
-    keys = kwargs.keys
+    def pattern
+      fields.map { |_, v| v.is_a?(Schema) ? v.pattern : '_' }.join(', ')
+    end
+  end
 
-    puts kwargs
+  class Type
+    class << self
+      attr_reader :schema
 
-    init_block = Proc.new do
-      define_method :initialize do |args = nil|
-        case args
-        in Hash
-          super(**kwargs.merge(args))
-        in Array
-          super(kwargs.merge(args))
-        else
-          super(**kwargs)
-        end
+      def define(schema)
+        @schema = schema
+        Data.define(*schema.fields.keys) do
 
-        unless args.nil?
-          # raise ArgumentError, 'Invalid arguments' unless validate
-        end
-      end
+          def initialize(...)
+            super
+            validate
+          end
 
-      alias_method :_deconstruct, :deconstruct
+          define_method(:deconstruct) do
+            self.class.schema.fields.keys.map do |key|
+              value = public_send(key)
+              if value.is_a?(Data) && value.class.respond_to?(:schema)
+                value.deconstruct
+              else
+                value
+              end
+            end
+          end
 
-      define_method :deconstruct do
-        puts 'deconstructing...'
-        val = _deconstruct
-        val.map do |item|
-          if item.is_a?(Data)
-            item.deconstruct
-          else
-            item
+          define_method(:deconstruct_keys) do |keys = nil|
+            keys ||= self.class.schema.fields.keys
+            keys.each_with_object({}) do |key, hash|
+              if self.class.schema.fields.key?(key)
+                value = public_send(key)
+                hash[key] = if value.is_a?(Data) && value.class.respond_to?(:schema)
+                              value.deconstruct_keys
+                            else
+                              value
+                            end
+              end
+            end
+          end
+
+          define_method(:to_hash) do
+            self.class.schema.fields.keys.each_with_object({}) do |key, hash|
+              value = public_send(key)
+              hash[key] = if value.is_a?(Data) && value.class.respond_to?(:schema)
+                            value.to_hash
+                          else
+                            value
+                          end
+            end
+          end
+
+          define_method(:validate) do
+            pattern = "case self\nin [#{self.class.schema.pattern}]\ntrue\nelse\nfalse\nend"
+            eval(pattern)
+          end
+
+          # Class variable to store the schema
+          class_variable_set(:@@schema, schema)
+
+          # Class method to access the schema
+          define_singleton_method(:schema) do
+            class_variable_get(:@@schema)
           end
         end
       end
+    end
+  end
 
-      alias_method :_deconstruct_keys, :deconstruct_keys
+  class SchemaBuilder
+    def initialize
+      @fields = {}
+    end
 
-      define_method :deconstruct_keys do |keys = self.class.schema.keys|
-        puts keys
-        _deconstruct_keys(keys)
-        # _deconstruct_keys(keys).transform_values do |v|
-        #   v.respond_to?(:deconstruct_keys) ? v.deconstruct_keys(keys) : v
-        # end
-      end
-
-      define_method :to_hash do
-        to_h.transform_values do |v|
-          v.respond_to?(:to_hash) ? v.to_hash : v
-        end
-      end
-
-      define_method :validate do
-        arr = self.class.new.deconstruct
-        pattern = <<-RUBY
-          case self
-            in #{arr}
-             true
-            else
-             false
-           end
-        RUBY
-        eval(pattern)
-      end
-
-      define_singleton_method :schema do
-        old_kwdargs
-      end
-
-      define_singleton_method :create_nested_objects do |grouped_data|
-        grouped_data.to_a.reverse.reduce(nil) do |inner, (klass, values)|
-          args = values.map(&:first)
-          args << inner if inner
-          klass.new(*args)
-        end
-      end
-
-      define_singleton_method :go do
-        schema.values.map { |v| v.respond_to?(:superclass) && v.superclass == Data ? v.go : self }.flatten
-      end
-
-      define_singleton_method :reconstruct do |*args|
-        grouped = args.zip(go).group_by(&:last)
-
-        create_nested_objects(grouped)
+    Object.constants.each do |const|
+      define_method(const) do |field_name, **args|
+        define_field(Object.const_get(const), field_name, **args)
       end
     end
-    Data.define(*keys, &init_block)
+
+    def compile(&block)
+      instance_eval(&block)
+    end
+
+    def const_missing(type)
+      Object.const_get(type)
+    end
+
+    def define_field(type, field_name, required: true, enable_default: false, default_value: nil, allow_nil: false)
+      @fields[field_name] = type
+    end
+
+    def method_missing(type, *args)
+      field_name = args.first
+      @fields[field_name] = Object.const_get(type)
+    end
+
+    def to_schema
+      Schema.new(@fields)
+    end
   end
 end

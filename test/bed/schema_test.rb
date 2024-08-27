@@ -4,7 +4,7 @@ require 'test_helper'
 
 class DefinitionTest < Minitest::Test
   def setup
-    @definition = Bed::Definition.define_with_types(foo: String, bar: Integer)
+    @definition = Bed.define(foo: String, bar: Integer)
     @object = @definition.new(foo: 'hello', bar: 42)
   end
 
@@ -27,11 +27,27 @@ class DefinitionTest < Minitest::Test
     end
   end
 
+  class SchemaTest < Minitest::Test
+    def setup
+      @schema = Bed.schema do
+        String :foo
+        Float :bar
+      end
+
+      @object = @schema.new(foo: 'hello', bar: 42.0)
+    end
+
+    def test_schema
+      assert_equal 'hello', @object.foo
+      assert_equal 42.0, @object.bar
+    end
+  end
+
   class NestedTest < DefinitionTest
     def setup
       super
       @baz_definition = @definition
-      @definition = Bed::Definition.define_with_types(foo: String, bar: Integer, baz: @baz_definition)
+      @definition = Bed.define(foo: String, bar: Integer, baz: @baz_definition)
       @object = @definition[foo: 'hello', bar: 42, baz: @baz_definition[foo: 'world', bar: 24]]
     end
 
