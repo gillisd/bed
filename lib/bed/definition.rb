@@ -131,8 +131,6 @@ module Bed
       Object.const_get(type)
     end
 
-
-
     def method_missing(type, *args)
       field_name = args.first
       @fields[field_name] = Object.const_get(type)

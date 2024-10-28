@@ -31,7 +31,7 @@ class DefinitionTest < Minitest::Test
     def setup
       @schema = Bed.schema do
         String :foo
-        Float :bar
+        Float :jaskldjf
       end
 
       @object = @schema.new(foo: 'hello', bar: 42.0)
@@ -129,6 +129,54 @@ class DefinitionTest < Minitest::Test
       @builder.define_field(Integer, :bar)
 
       assert_kind_of Bed::Schema, @builder.to_schema
+    end
+
+    def test_another_bed
+      foo = Bed.flex do
+        foo 'bar'
+        car 'dar'
+        nar do
+          some do
+            structure 'foo'
+          end
+        end
+
+      end
+
+      puts foo
+    end
+  end
+
+  class TestInfer < Minitest::Test
+    require 'json'
+
+    def test_infer
+    path = '/Users/davidgillis/Desktop/keepa2/0002156121.json'
+      # result = Bed.infer_file(path)
+
+      Bed.singleton_class.alias_method :new, :flex
+      foo = JSON.load_file(path, {object_class: Bed::Flex::Builder})
+      foo
+
+    end
+
+    def test_foo
+      klass = Data.define(:foo, :bar)
+      bar_klass = Data.define(:count)
+
+
+    end
+
+    def test_algo
+      # I have a class that I put in JSON.load_file(path, {object_class: my_class})
+      # to de-serialize json in ruby. The class is instantiated and the []=(name, value)
+      # method is called to assign pairs from the json. However, I wish to produce a final product using nested instances of the
+      # Data class, which are defined at runtime based on the schema. But setters like []= cannot be called on Data instances,
+      # as the instances are immutable, so all data must be initialized up front. I am guessing that this means we must go bottom up from the json tree
+      # rather than top down. How can we build an algorithm to do this?
+
+
+
     end
   end
 end
