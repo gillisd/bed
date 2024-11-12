@@ -28,7 +28,13 @@ module Bed
         end
       end
 
-      Data.define(*attributes.keys, &method(:definition)).new(**attributes)
+      cache_key = [attributes.keys]
+
+      Thread.current[:__bed_cast_cache] ||= {}
+      Thread.current[:__bed_cast_cache][cache_key] ||= (
+        Data.define(*attributes.keys, &method(:definition))
+      )
+      Thread.current[:__bed_cast_cache][cache_key].new(**attributes)
     end
 
     private

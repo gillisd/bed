@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'active_support/all'
+require 'bed/data'
 require 'bed/definition'
 require 'bed/caster'
 require 'bed/flex/builder'
@@ -31,12 +33,31 @@ module Bed
   end
 
   def self.infer_file(pathname)
-    infer(File.read(pathname))
+    infer(pathname)
   end
 
   def self.infer(inferrable)
-    buildable = JSON.parse(inferrable, symbolize_names: true)
+    buildable = get_buildable(inferrable)
 
     Caster.cast(buildable)
+  end
+
+  def self.get_buildable(inferrable)
+    if looks_like_json?(inferrable)
+      return JSON.parse(inferrable, symbolize_names: true)
+    end
+
+    case inferrable
+    in String
+      JSON.load_file(inferrable, symbolize_names: true)
+    in Hash
+      inferrable
+    else
+      raise ArgumentError, "inferrable must be a String, Hash, JSON file path, or JSON string"
+    end
+  end
+
+  def self.looks_like_json?(str)
+    str.start_with?('{') || str.start_with?('[')
   end
 end
