@@ -2,10 +2,10 @@
 
 require 'json'
 require 'active_support/all'
-require 'bed/data'
-require 'bed/definition'
-require 'bed/caster'
-require 'bed/flex/builder'
+require_relative 'bed/data'
+require_relative 'bed/definition'
+require_relative 'bed/caster'
+require_relative 'bed/flex/builder'
 require_relative "bed/version"
 
 module Bed
