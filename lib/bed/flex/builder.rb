@@ -30,7 +30,7 @@ module Bed
 
       def to_h
         return @attributes[:_converged] if @converged
-        @attributes.transform_values { |v| v.is_a?(Builder) ? v.to_h : v }
+        @attributes.deep_transform_values { |v| v.respond_to?(:to_h) ? v.to_h : v }
       end
 
       # alias_method :inspect, :to_h

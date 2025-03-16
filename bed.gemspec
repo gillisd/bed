@@ -4,7 +4,7 @@ require_relative "lib/bed/version"
 Gem::Specification.new do |spec|
   spec.name = "bed"
   spec.version = Bed::VERSION
-  spec.platform = Gem::Platform::RUBY  # Add this line
+  spec.platform = Gem::Platform::RUBY
   spec.authors = ["David Gillis"]
   spec.email = ["david.gillis@hey.com"]
   spec.summary = "A simple, modern schema library built on top of Data class"
@@ -24,4 +24,7 @@ Gem::Specification.new do |spec|
   spec.bindir = "exe"
   spec.executables = Dir.glob("exe/*").map { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  spec.add_dependency "activesupport", ">= 6.0"
+  spec.add_dependency "json"
 end

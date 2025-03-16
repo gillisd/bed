@@ -1,20 +1,3 @@
-class Object
-  class << self
-    alias_method :original_method_missing, :method_missing
-
-    def method_missing(method_name, *args, &block)
-      if method_name == :String
-        puts "Intercepted call to String with argument: #{args.first}"
-        define_method(args.first) do
-          "This is a dynamically defined method: #{args.first}"
-        end
-      else
-        original_method_missing(method_name, *args, &block)
-      end
-    end
-  end
-end
-
 module Bed
   class Schema
     attr_reader :fields
@@ -69,7 +52,7 @@ module Bed
           define_method(:to_hash) do
             self.class.schema.fields.keys.each_with_object({}) do |key, hash|
               value = public_send(key)
-              hash[key] = if value.is_a?(Data) && value.class.respond_to?(:schema)
+              hash[key] = if value.is_a?(Data) && (value.class.respond_to?(:schema) || value.respond_to?(:to_hash))
                             value.to_hash
                           else
                             value
