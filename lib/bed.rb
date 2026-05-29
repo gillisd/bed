@@ -2,29 +2,29 @@
 
 # require 'json'
 # require 'active_support'
-require_relative 'bed/data'
+require_relative "bed/data"
 # require_relative 'bed/definition'
 # require_relative 'bed/caster'
 # require_relative 'bed/flex/builder'
 # require_relative "bed/version"
 
 $LOAD_PATH << File.expand_path(__dir__)
-autoload :Pathname, 'pathname'
-autoload :FileUtils, 'fileutils'
-autoload :StringIO, 'stringio'
-autoload :JSON, 'json'
-autoload :SecureRandom, 'securerandom'
+autoload :Pathname, "pathname"
+autoload :FileUtils, "fileutils"
+autoload :StringIO, "stringio"
+autoload :JSON, "json"
+autoload :SecureRandom, "securerandom"
 
 module Bed
-  autoload :Schema, 'bed/definition'
-  autoload :SchemaBuilder, 'bed/definition'
-  autoload :Type, 'bed/definition'
-  autoload :Caster, 'bed/caster'
+  autoload :Schema, "bed/definition"
+  autoload :SchemaBuilder, "bed/definition"
+  autoload :Type, "bed/definition"
+  autoload :Caster, "bed/caster"
   # autoload :Data, 'bed/data'
-  autoload :VERSION, 'bed/version'
+  autoload :VERSION, "bed/version"
 
   module Flex
-    autoload :Builder, 'bed/flex/builder'
+    autoload :Builder, "bed/flex/builder"
   end
 
   class Error < StandardError; end
@@ -77,6 +77,6 @@ module Bed
 
   def self.looks_like_json?(str)
     return false unless String === str
-    str.chars.first == '{' || str.chars.first == '['
+    str.chars.first == "{" || str.chars.first == "["
   end
 end

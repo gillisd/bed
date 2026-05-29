@@ -7,7 +7,7 @@ module Bed
     end
 
     def pattern
-      fields.map { |_, v| v.is_a?(Schema) ? v.pattern : '_' }.join(', ')
+      fields.map { |_, v| v.is_a?(Schema) ? v.pattern : "_" }.join(", ")
     end
   end
 

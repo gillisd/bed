@@ -18,7 +18,7 @@ unless Bed::Data.respond_to?(:define)
     def deconstruct_keys(keys_or_nil)
       return @__members__ unless keys_or_nil
 
-      raise TypeError, 'Expected symbols' unless keys_or_nil.is_a?(Array) && keys_or_nil.all? { |s| s.is_a?(Symbol) }
+      raise TypeError, "Expected symbols" unless keys_or_nil.is_a?(Array) && keys_or_nil.all? { |s| s.is_a?(Symbol) }
 
       @__members__.slice(*keys_or_nil)
     end
@@ -26,10 +26,10 @@ unless Bed::Data.respond_to?(:define)
     def self.define(*members, &block)
       members.each do |m|
         raise TypeError, "#{m} is not a Symbol" unless m.is_a?(Symbol) || m.is_a?(String)
-        raise ArgumentError, "invalid data member: #{m}" if m.end_with?('=')
+        raise ArgumentError, "invalid data member: #{m}" if m.end_with?("=")
       end
       members = members.map(&:to_sym)
-      raise ArgumentError, 'duplicate members' if members.uniq!
+      raise ArgumentError, "duplicate members" if members.uniq!
 
       klass = instance_eval <<-"END_DEFINE", __FILE__, __LINE__ + 1
         Class.new(::Bed::Data) do     # Class.new(::Data) do
@@ -86,11 +86,11 @@ unless Bed::Data.respond_to?(:define)
       given = named_values.keys
       missing = members - given
       unless missing.empty?
-        missing = missing.map(&:inspect).join(', ')
+        missing = missing.map(&:inspect).join(", ")
         raise ArgumentError, "missing keywords: #{missing}"
       end
       if members.size < given.size
-        extra = (given - members).map(&:inspect).join(', ')
+        extra = (given - members).map(&:inspect).join(", ")
         raise ArgumentError, "unknown keywords: #{extra}"
       end
       @__members__ = named_values.freeze
@@ -105,8 +105,8 @@ unless Bed::Data.respond_to?(:define)
     end
 
     def inspect
-      data = @__members__.map { |k, v| "#{k}=#{v.inspect}" }.join(', ')
-      space = data != '' && self.class.name ? ' ' : ''
+      data = @__members__.map { |k, v| "#{k}=#{v.inspect}" }.join(", ")
+      space = data != "" && self.class.name ? " " : ""
       "#<data #{self.class.name}#{space}#{data}>"
     end
 

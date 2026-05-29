@@ -11,8 +11,8 @@ module Bed
     def cast
       raise TypeError, "#{@buildable} does not respond to to_h" unless @buildable.respond_to?(:to_h)
 
+                         #    .deep_symbolize_keys
       attributes = @buildable.to_h
-                             .deep_symbolize_keys
                              .transform_values do |value|
         case value
         in Hash

@@ -25,7 +25,7 @@ module Bed
       end
 
       def get(path)
-        path.to_s.split('.').inject(self) { |obj_self, attr| obj_self.public_send(attr) }
+        path.to_s.split(".").inject(self) { |obj_self, attr| obj_self.public_send(attr) }
       end
 
       def to_h
@@ -46,11 +46,11 @@ module Bed
 
       def pretty_print(pp)
         pp.object_address_group(self) do
-          pp.seplist(@attributes, -> { pp.text ',' }) do |k, v|
+          pp.seplist(@attributes, -> { pp.text "," }) do |k, v|
             pp.breakable
             pp.group(1) do
               pp.text k.to_s
-              pp.text ':'
+              pp.text ":"
               pp.breakable
               pp.pp v
             end
@@ -62,7 +62,7 @@ module Bed
 
       def inspect
         case @attributes
-        in {} then '{}'
+        in {} then "{}"
         in { _converged: value } then value
         else
           old_inspect
@@ -102,8 +102,8 @@ module Bed
       def method_missing(name, *args, &block)
         return super if !@whitelisted_attributes.empty? && !@whitelisted_attributes.include?(name)
 
-        if name.end_with?('=')
-          attribute_name = name.to_s.chomp('=').to_sym
+        if name.end_with?("=")
+          attribute_name = name.to_s.chomp("=").to_sym
           set_attribute(attribute_name, args.first)
         else
           get_or_set_attribute(name, *args, &block)
